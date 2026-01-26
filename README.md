@@ -2,13 +2,13 @@
 
 Aplicação web completa para gestão integral de um hotel, desenvolvida como projeto de Desenvolvimento de Software.
 
-## 📋 Descrição
+## Descrição
 
 Sistema que permite:
 - **Clientes**: pesquisar e reservar quartos, gerir reservas mediante autenticação
 - **Gerência do Hotel**: administrar quartos, tipos de quarto, hóspedes, reservas, pagamentos, check-in/check-out e relatórios
 
-## 🏗️ Arquitetura
+## Arquitetura
 
 - **Frontend**: Next.js 14 (React) com TypeScript
 - **Backend**: Node.js com Express e TypeScript
@@ -25,7 +25,7 @@ Hotel/
 └── docs/             # Documentação
 ```
 
-## 🚀 Tecnologias Escolhidas
+## Tecnologias Escolhidas
 
 ### Frontend
 - **Next.js 14**: Framework React com App Router para melhor performance e SEO
@@ -45,7 +45,7 @@ Hotel/
 - **MySQL**: Base de dados relacional (compatível com MySQL Workbench)
 - **Prisma**: ORM moderno com migrations automáticas
 
-## 📦 Instalação
+## Instalação
 
 ### Pré-requisitos
 - Node.js 18+
@@ -95,7 +95,7 @@ cd frontend
 npm run dev
 ```
 
-## 👥 Perfis de Utilizador
+## Perfis de Utilizador
 
 ### Cliente
 - Registar-se e autenticar-se
@@ -115,7 +115,7 @@ npm run dev
 - Check-in/Check-out
 - Consultar relatórios básicos
 
-## 📊 Entidades Principais
+## Entidades Principais
 
 - **Quarto**: número, tipo, capacidade, estado
 - **Tipo de Quarto**: nome, descrição, valor base, suplementos
@@ -123,7 +123,7 @@ npm run dev
 - **Reserva**: datas, quartos, hóspedes, estado, total
 - **Pagamento**: montante, data, tipo, operador
 
-## 🔒 Regras de Negócio
+## Regras de Negócio
 
 - Validação de disponibilidade de quartos
 - Cálculo automático de totais (diárias + suplementos + pequeno-almoço)
@@ -131,7 +131,7 @@ npm run dev
 - Prevenção de overbooking
 - Validação de capacidade por tipo de quarto
 
-## 📈 Relatórios
+## Relatórios
 
 - Ocupação diária/mensal
 - Reservas ativas, futuras e canceladas
@@ -139,11 +139,11 @@ npm run dev
 - Histórico de hóspedes
 - Logs de auditoria
 
-## 📝 Documentação
+## Documentação
 
 Consulte o ficheiro `INSTALACAO.md` para instruções detalhadas de instalação e configuração.
 
-## 🔑 Credenciais de Teste
+## Credenciais de Teste
 
 Após executar o seed da base de dados, pode usar as seguintes credenciais:
 
@@ -151,48 +151,48 @@ Após executar o seed da base de dados, pode usar as seguintes credenciais:
 - **Rececionista**: `rececionista@hotel.com` / `password123`
 - **Cliente**: `cliente@example.com` / `password123`
 
-## 📋 Funcionalidades Implementadas
+## Funcionalidades Implementadas
 
 ### Área do Cliente
-- ✅ Registro e autenticação
-- ✅ Pesquisa de tipos de quarto
-- ✅ Verificação de disponibilidade
-- ✅ Criação de reservas
-- ✅ Listagem de reservas
-- ✅ Cancelamento de reservas (com validação de 24h)
-- ✅ Visualização de detalhes da reserva
+- Registro e autenticação
+- Pesquisa de tipos de quarto
+- Verificação de disponibilidade
+- Criação de reservas
+- Listagem de reservas
+- Cancelamento de reservas (com validação de 24h)
+- Visualização de detalhes da reserva
 
 ### Área da Gerência
-- ✅ Gestão de tipos de quarto (apenas Gestor)
-- ✅ Gestão de quartos
-- ✅ Gestão de hóspedes
-- ✅ Gestão de reservas
-- ✅ Check-in/Check-out
-- ✅ Registro de pagamentos
-- ✅ Gestão de utilizadores (apenas Gestor)
-- ✅ Relatórios:
+- Gestão de tipos de quarto (apenas Gestor)
+- Gestão de quartos
+- Gestão de hóspedes
+- Gestão de reservas
+- Check-in/Check-out
+- Registro de pagamentos
+- Gestão de utilizadores (apenas Gestor)
+- Relatórios:
   - Ocupação diária/mensal
   - Reservas por período
   - Receita por período
   - Histórico de hóspedes
   - Logs de auditoria
 
-## 🛡️ Regras de Negócio Implementadas
+## Regras de Negócio Implementadas
 
-- ✅ Validação de datas (não permitir reservas no passado)
-- ✅ Verificação de disponibilidade de quartos
-- ✅ Prevenção de overbooking
-- ✅ Cálculo automático de totais (diárias + suplementos + pequeno-almoço)
-- ✅ Regra das 24 horas para cancelamento/edição
-- ✅ Validação de capacidade por tipo de quarto
-- ✅ Suporte a hóspedes extras
-- ✅ Gestão de estados de quartos (LIVRE, OCUPADO, MANUTENCAO)
-- ✅ Logs de auditoria para ações críticas
+- Validação de datas (não permitir reservas no passado)
+- Verificação de disponibilidade de quartos
+- Prevenção de overbooking
+- Cálculo automático de totais (diárias + suplementos + pequeno-almoço)
+- Regra das 24 horas para cancelamento/edição
+- Validação de capacidade por tipo de quarto
+- Suporte a hóspedes extras
+- Gestão de estados de quartos (LIVRE, OCUPADO, MANUTENCAO)
+- Logs de auditoria para ações críticas
 
-## 👨‍💻 Desenvolvido por
+## Desenvolvido por
 
 Projeto desenvolvido no âmbito da Licenciatura em Engenharia Informática - Universidade Europeia
 
-## 📅 Data de Entrega
+## Data de Entrega
 
 26/01/2025
