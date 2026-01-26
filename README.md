@@ -143,8 +143,6 @@ Após executar o seed da base de dados, pode usar as seguintes credenciais:
 
 Nayuka Malebo
 
-Projeto desenvolvido no âmbito da Licenciatura em Engenharia Informática - Universidade Europeia
-
 ## Data de Entrega
 
 26/01/2025
