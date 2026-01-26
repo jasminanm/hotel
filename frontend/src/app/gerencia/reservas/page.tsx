@@ -79,6 +79,20 @@ export default function ReservasPage() {
     }
   };
 
+  const handleCancelar = async (id: string) => {
+    if (!confirm('Tem certeza que deseja cancelar esta reserva?')) {
+      return;
+    }
+
+    try {
+      await api.post(`/gerencia/reservas/${id}/cancelar`);
+      loadReservas();
+      alert('Reserva cancelada com sucesso!');
+    } catch (error: any) {
+      alert(error.response?.data?.error || 'Erro ao cancelar reserva');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -169,7 +183,23 @@ export default function ReservasPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-4">
+                <div className="flex gap-2 mt-4 flex-wrap">
+                  {reserva.estado === 'ATIVA' && !reserva.checkInEfetuado && (
+                    <>
+                      <Link
+                        href={`/gerencia/reservas/${reserva.id}/editar`}
+                        className="bg-yellow-600 text-white px-4 py-2 rounded-lg hover:bg-yellow-700 text-sm"
+                      >
+                        Editar
+                      </Link>
+                      <button
+                        onClick={() => handleCancelar(reserva.id)}
+                        className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 text-sm"
+                      >
+                        Cancelar
+                      </button>
+                    </>
+                  )}
                   {!reserva.checkInEfetuado && (
                     <button
                       onClick={() => handleCheckIn(reserva.id)}
