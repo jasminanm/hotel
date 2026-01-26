@@ -1,0 +1,214 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// Tipos de documento suportados
+enum TipoDocumento {
+  CARTAO_CIDADAO
+  PASSAPORTE
+  OUTRO
+}
+
+// Tipos de utilizador
+enum TipoUtilizador {
+  CLIENTE
+  RECECIONISTA
+  GESTOR
+}
+
+// Estados do quarto
+enum EstadoQuarto {
+  LIVRE
+  OCUPADO
+  MANUTENCAO
+}
+
+// Estados da reserva
+enum EstadoReserva {
+  ATIVA
+  CANCELADA
+  CONCLUIDA
+}
+
+// Tipos de pagamento
+enum TipoPagamento {
+  PARCIAL
+  TOTAL
+}
+
+// Modelo de Utilizador (para autenticação)
+model Utilizador {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  password      String
+  tipo          TipoUtilizador @default(CLIENTE)
+  nome          String
+  ativo         Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relações
+  reservas      Reserva[]
+  pagamentos    Pagamento[]
+  logsAuditoria LogAuditoria[]
+
+  @@map("utilizadores")
+}
+
+// Tipo de Quarto
+model TipoQuarto {
+  id                    String   @id @default(cuid())
+  nome                  String
+  descricao             String?
+  valorBaseDiaria       Float
+  capacidadeBase        Int      // Número de hóspedes base
+  suplementoHospedeExtra Float?  // Valor por hóspede extra (opcional)
+  custoPequenoAlmoco    Float    // Custo do pequeno-almoço por hóspede
+  ativo                 Boolean  @default(true)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  // Relações
+  quartos               Quarto[]
+  reservas              Reserva[]
+
+  @@unique([nome])
+  @@map("tipos_quarto")
+}
+
+// Quarto individual
+model Quarto {
+  id          String       @id @default(cuid())
+  numero      String       @unique
+  tipoQuartoId String
+  estado      EstadoQuarto @default(LIVRE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  // Relações
+  tipoQuarto TipoQuarto   @relation(fields: [tipoQuartoId], references: [id])
+  reservas   ReservaQuarto[]
+
+  @@map("quartos")
+}
+
+// Hóspede
+model Hospede {
+  id            String         @id @default(cuid())
+  nome          String
+  tipoDocumento TipoDocumento
+  numeroDocumento String
+  nif           String?       // Opcional, apenas para faturação
+  ativo         Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  // Relações
+  reservas      ReservaHospede[]
+
+  @@unique([tipoDocumento, numeroDocumento])
+  @@map("hospedes")
+}
+
+// Reserva
+model Reserva {
+  id                  String         @id @default(cuid())
+  utilizadorId        String
+  tipoQuartoId        String
+  dataInicio          DateTime       @db.Date
+  dataFim             DateTime       @db.Date
+  quantidadeQuartos   Int
+  hospedesPorQuarto   Int            // Número de hóspedes por quarto
+  incluirPequenoAlmoco Boolean       @default(false)
+  estado              EstadoReserva  @default(ATIVA)
+  totalCalculado      Float
+  checkInEfetuado     Boolean        @default(false)
+  checkOutEfetuado    Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+
+  // Relações
+  utilizador          Utilizador     @relation(fields: [utilizadorId], references: [id])
+  tipoQuarto          TipoQuarto     @relation(fields: [tipoQuartoId], references: [id])
+  quartos             ReservaQuarto[]
+  hospedes            ReservaHospede[]
+  pagamentos          Pagamento[]
+
+  @@map("reservas")
+}
+
+// Tabela de junção: Reserva <-> Quarto (many-to-many)
+model ReservaQuarto {
+  id        String   @id @default(cuid())
+  reservaId String
+  quartoId  String
+  createdAt DateTime @default(now())
+
+  reserva   Reserva  @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  quarto    Quarto   @relation(fields: [quartoId], references: [id])
+
+  @@unique([reservaId, quartoId])
+  @@map("reservas_quartos")
+}
+
+// Tabela de junção: Reserva <-> Hóspede (many-to-many)
+model ReservaHospede {
+  id        String   @id @default(cuid())
+  reservaId String
+  hospedeId String
+  createdAt DateTime @default(now())
+
+  reserva   Reserva  @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  hospede   Hospede  @relation(fields: [hospedeId], references: [id])
+
+  @@unique([reservaId, hospedeId])
+  @@map("reservas_hospedes")
+}
+
+// Pagamento
+model Pagamento {
+  id          String         @id @default(cuid())
+  reservaId   String
+  utilizadorId String        // Operador que registou o pagamento
+  montante    Float
+  data        DateTime       @default(now())
+  tipo        TipoPagamento
+  observacoes String?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  // Relações
+  reserva     Reserva        @relation(fields: [reservaId], references: [id])
+  utilizador  Utilizador     @relation(fields: [utilizadorId], references: [id])
+
+  @@map("pagamentos")
+}
+
+// Logs de Auditoria
+model LogAuditoria {
+  id          String   @id @default(cuid())
+  acao        String   // Ex: "CRIAR_RESERVA", "CANCELAR_RESERVA", "CHECK_IN", etc.
+  entidade    String   // Ex: "Reserva", "Quarto", "Pagamento"
+  entidadeId  String?  // ID da entidade afetada (pode ser de qualquer tipo)
+  utilizadorId String?
+  detalhes    String?  @db.Text
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  // Relações
+  utilizador  Utilizador? @relation(fields: [utilizadorId], references: [id])
+
+  @@map("logs_auditoria")
+  @@index([acao])
+  @@index([entidade])
+  @@index([createdAt])
+}
