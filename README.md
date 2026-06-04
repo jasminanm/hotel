@@ -2,11 +2,6 @@
 
 Projeto de Programação Web — gestão de reservas de um hotel.
 
-## Stack
-
-- Frontend: Next.js, React, Tailwind
-- Backend: Node.js, Express
-- Base de dados: MySQL, Prisma
 
 ## Estrutura
 
