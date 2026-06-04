@@ -19,7 +19,7 @@ Hotel/
 
 ## Instalação
 
-1. MySQL a correr (criar base `hotel_db` ou usar `hotel_db.sql`)
+1. MySQL
 
 2. Backend:
 ```bash
