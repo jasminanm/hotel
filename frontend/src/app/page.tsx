@@ -67,12 +67,18 @@ export default function Home() {
               </Link>
             </div>
 
-            <div className="mt-12">
+            <div className="mt-12 flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link
                 href="/login"
                 className="inline-block bg-primary-600 text-white px-8 py-3 rounded-lg font-semibold hover:bg-primary-700 transition-colors"
               >
                 Entrar
+              </Link>
+              <Link
+                href="/sobre"
+                className="inline-block bg-white text-primary-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors"
+              >
+                Sobre nós
               </Link>
             </div>
           </div>
