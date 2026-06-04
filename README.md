@@ -33,16 +33,7 @@ npm install
 npm run dev
 ```
 
-4. Abrir http://localhost:3000 (API em http://localhost:3001)
 
-### .env do backend
-
-```
-DATABASE_URL="mysql://utilizador:password@localhost:3306/hotel_db"
-JWT_SECRET="alterar-este-valor"
-PORT=3001
-CORS_ORIGIN="http://localhost:3000"
-```
 
 ## Credenciais de teste
 
