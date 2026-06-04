@@ -3,6 +3,10 @@ import { PrismaClient } from '@prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { verificarDisponibilidade, calcularTotalReserva, atribuirQuartos, podeEditarCancelar } from '../utils/reserva.util';
 import { createLog, getClientInfo } from '../utils/logger.util';
+import {
+  garantirHospedeDoCliente,
+  criarNotificacao,
+} from '../utils/relacao.util';
 import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
@@ -177,7 +181,21 @@ router.post('/reservas', [
       quantidadeQuartos
     );
 
-    const hospedesIds: string[] = [];
+    const utilizador = await prisma.utilizador.findUnique({
+      where: { id: req.userId! },
+    });
+
+    if (!utilizador) {
+      return res.status(401).json({ error: 'Utilizador não encontrado' });
+    }
+
+    const hospedeConta = await garantirHospedeDoCliente(
+      utilizador.id,
+      utilizador.nome,
+      utilizador.email
+    );
+
+    const hospedesIds: string[] = [hospedeConta.id];
     for (const hospedeData of hospedes) {
       let hospede = await prisma.hospede.findUnique({
         where: {
@@ -199,7 +217,9 @@ router.post('/reservas', [
         });
       }
 
-      hospedesIds.push(hospede.id);
+      if (!hospedesIds.includes(hospede.id)) {
+        hospedesIds.push(hospede.id);
+      }
     }
 
     const reserva = await prisma.reserva.create({
@@ -254,6 +274,14 @@ router.post('/reservas', [
       utilizadorId: req.userId!,
       detalhes: `Reserva criada: ${quantidadeQuartos} quarto(s) de ${tipoQuarto.nome}`,
       ...getClientInfo(req),
+    });
+
+    const quartoId = reserva.quartos[0]?.quartoId;
+    await criarNotificacao({
+      utilizadorId: req.userId!,
+      reservaId: reserva.id,
+      quartoId,
+      mensagem: `Reserva confirmada para ${tipoQuarto.nome}.`,
     });
 
     res.status(201).json(reserva);
@@ -406,6 +434,12 @@ router.post('/reservas/:id/cancelar', async (req: AuthRequest, res) => {
       ...getClientInfo(req),
     });
 
+    await criarNotificacao({
+      utilizadorId: req.userId!,
+      reservaId: reserva.id,
+      mensagem: 'A sua reserva foi cancelada.',
+    });
+
     res.json({ message: 'Reserva cancelada com sucesso', reserva: reservaAtualizada });
   } catch (error: any) {
     console.error('Erro ao cancelar reserva:', error);
@@ -548,6 +582,59 @@ router.put('/reservas/:id', [
   } catch (error: any) {
     console.error('Erro ao editar reserva:', error);
     res.status(500).json({ error: 'Erro ao editar reserva', details: error.message });
+  }
+});
+
+router.get('/notificacoes', async (req: AuthRequest, res) => {
+  try {
+    const notificacoes = await prisma.notificacao.findMany({
+      where: { utilizadorId: req.userId! },
+      include: {
+        reserva: {
+          select: {
+            id: true,
+            dataInicio: true,
+            dataFim: true,
+          },
+        },
+        quarto: {
+          select: {
+            numero: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    res.json(notificacoes);
+  } catch (error: any) {
+    console.error('Erro ao buscar notificações:', error);
+    res.status(500).json({ error: 'Erro ao buscar notificações' });
+  }
+});
+
+router.patch('/notificacoes/:id/lida', async (req: AuthRequest, res) => {
+  try {
+    const notificacao = await prisma.notificacao.findFirst({
+      where: {
+        id: req.params.id,
+        utilizadorId: req.userId!,
+      },
+    });
+
+    if (!notificacao) {
+      return res.status(404).json({ error: 'Notificação não encontrada' });
+    }
+
+    const atualizada = await prisma.notificacao.update({
+      where: { id: notificacao.id },
+      data: { lida: true },
+    });
+
+    res.json(atualizada);
+  } catch (error: any) {
+    console.error('Erro ao marcar notificação:', error);
+    res.status(500).json({ error: 'Erro ao marcar notificação' });
   }
 });
 

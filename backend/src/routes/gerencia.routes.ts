@@ -2,6 +2,11 @@ import express from 'express';
 import { PrismaClient, TipoUtilizador } from '@prisma/client';
 import { authenticate, AuthRequest, requireAdmin, requireGestor } from '../middleware/auth.middleware';
 import { createLog, getClientInfo } from '../utils/logger.util';
+import {
+  associarStaffReserva,
+  associarStaffPagamento,
+  criarNotificacao,
+} from '../utils/relacao.util';
 import { body, validationResult } from 'express-validator';
 
 const router = express.Router();
@@ -318,6 +323,26 @@ router.get('/reservas/:id', async (req, res) => {
                 nome: true,
               },
             },
+            rececionistas: {
+              include: {
+                utilizador: {
+                  select: {
+                    nome: true,
+                    tipo: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        rececionistas: {
+          include: {
+            utilizador: {
+              select: {
+                nome: true,
+                tipo: true,
+              },
+            },
           },
         },
       },
@@ -364,6 +389,8 @@ router.post('/reservas/:id/cancelar', async (req: AuthRequest, res) => {
       },
     });
 
+    await associarStaffReserva(reserva.id, req.userId!, req.userType!);
+
     await createLog({
       acao: 'CANCELAR_RESERVA',
       entidade: 'Reserva',
@@ -371,6 +398,12 @@ router.post('/reservas/:id/cancelar', async (req: AuthRequest, res) => {
       utilizadorId: req.userId!,
       detalhes: 'Reserva cancelada pela gerência',
       ...getClientInfo(req),
+    });
+
+    await criarNotificacao({
+      utilizadorId: reserva.utilizadorId,
+      reservaId: reserva.id,
+      mensagem: 'A sua reserva foi cancelada pela receção.',
     });
 
     res.json({ message: 'Reserva cancelada com sucesso', reserva: reservaAtualizada });
@@ -412,6 +445,8 @@ router.post('/reservas/:id/checkin', async (req: AuthRequest, res) => {
       },
     });
 
+    await associarStaffReserva(reserva.id, req.userId!, req.userType!);
+
     await createLog({
       acao: 'CHECK_IN',
       entidade: 'Reserva',
@@ -419,6 +454,14 @@ router.post('/reservas/:id/checkin', async (req: AuthRequest, res) => {
       utilizadorId: req.userId!,
       detalhes: 'Check-in efetuado',
       ...getClientInfo(req),
+    });
+
+    const quartoId = reserva.quartos[0]?.quartoId;
+    await criarNotificacao({
+      utilizadorId: reserva.utilizadorId,
+      reservaId: reserva.id,
+      quartoId,
+      mensagem: 'Check-in efetuado. Bem-vindo ao hotel.',
     });
 
     res.json({ message: 'Check-in efetuado com sucesso', reserva: reservaAtualizada });
@@ -467,6 +510,8 @@ router.post('/reservas/:id/checkout', async (req: AuthRequest, res) => {
       },
     });
 
+    await associarStaffReserva(reserva.id, req.userId!, req.userType!);
+
     await createLog({
       acao: 'CHECK_OUT',
       entidade: 'Reserva',
@@ -474,6 +519,12 @@ router.post('/reservas/:id/checkout', async (req: AuthRequest, res) => {
       utilizadorId: req.userId!,
       detalhes: 'Check-out efetuado',
       ...getClientInfo(req),
+    });
+
+    await criarNotificacao({
+      utilizadorId: reserva.utilizadorId,
+      reservaId: reserva.id,
+      mensagem: 'Check-out efetuado. Obrigado pela estadia.',
     });
 
     res.json({ message: 'Check-out efetuado com sucesso', reserva: reservaAtualizada });
@@ -537,7 +588,7 @@ router.post('/pagamentos', [
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { reservaId, montante, tipo, observacoes } = req.body;
+    const { reservaId, montante, tipo, observacoes, outroOperadorId } = req.body;
 
     // Verificar se a reserva existe
     const reserva = await prisma.reserva.findUnique({
@@ -579,6 +630,14 @@ router.post('/pagamentos', [
       },
     });
 
+    await associarStaffReserva(reservaId, req.userId!, req.userType!);
+    await associarStaffPagamento(
+      pagamento.id,
+      req.userId!,
+      req.userType!,
+      outroOperadorId
+    );
+
     await createLog({
       acao: 'REGISTAR_PAGAMENTO',
       entidade: 'Pagamento',
@@ -586,6 +645,12 @@ router.post('/pagamentos', [
       utilizadorId: req.userId!,
       detalhes: `Pagamento registado: ${montante}€ (${tipo})`,
       ...getClientInfo(req),
+    });
+
+    await criarNotificacao({
+      utilizadorId: reserva.utilizadorId,
+      reservaId: reserva.id,
+      mensagem: `Pagamento de ${montante}€ registado (${tipo}).`,
     });
 
     res.status(201).json(pagamento);

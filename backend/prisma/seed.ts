@@ -42,6 +42,17 @@ async function main() {
     },
   });
 
+  await prisma.hospede.upsert({
+    where: { utilizadorId: cliente.id },
+    update: {},
+    create: {
+      utilizadorId: cliente.id,
+      nome: cliente.nome,
+      tipoDocumento: TipoDocumento.OUTRO,
+      numeroDocumento: cliente.email,
+    },
+  });
+
   console.log('✅ Utilizadores criados');
 
   // Criar tipos de quarto
