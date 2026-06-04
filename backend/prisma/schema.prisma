@@ -56,9 +56,13 @@ model Utilizador {
   updatedAt     DateTime       @updatedAt
 
   // Relações
-  reservas      Reserva[]
-  pagamentos    Pagamento[]
-  logsAuditoria LogAuditoria[]
+  reservas              Reserva[]
+  pagamentos            Pagamento[]
+  logsAuditoria         LogAuditoria[]
+  hospedePerfil         Hospede?
+  notificacoes          Notificacao[]
+  reservasRececionista  ReservaRececionista[]
+  pagamentosRececionista PagamentoRececionista[]
 
   @@map("utilizadores")
 }
@@ -94,8 +98,9 @@ model Quarto {
   updatedAt   DateTime     @updatedAt
 
   // Relações
-  tipoQuarto TipoQuarto   @relation(fields: [tipoQuartoId], references: [id])
-  reservas   ReservaQuarto[]
+  tipoQuarto     TipoQuarto    @relation(fields: [tipoQuartoId], references: [id])
+  reservas       ReservaQuarto[]
+  notificacoes   Notificacao[]
 
   @@map("quartos")
 }
@@ -108,10 +113,12 @@ model Hospede {
   numeroDocumento String
   nif           String?       // Opcional, apenas para faturação
   ativo         Boolean        @default(true)
+  utilizadorId  String?        @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
   // Relações
+  utilizador    Utilizador?    @relation(fields: [utilizadorId], references: [id])
   reservas      ReservaHospede[]
 
   @@unique([tipoDocumento, numeroDocumento])
@@ -141,6 +148,8 @@ model Reserva {
   quartos             ReservaQuarto[]
   hospedes            ReservaHospede[]
   pagamentos          Pagamento[]
+  notificacoes        Notificacao[]
+  rececionistas       ReservaRececionista[]
 
   @@map("reservas")
 }
@@ -186,10 +195,54 @@ model Pagamento {
   updatedAt   DateTime       @updatedAt
 
   // Relações
-  reserva     Reserva        @relation(fields: [reservaId], references: [id])
-  utilizador  Utilizador     @relation(fields: [utilizadorId], references: [id])
+  reserva        Reserva                 @relation(fields: [reservaId], references: [id])
+  utilizador     Utilizador              @relation(fields: [utilizadorId], references: [id])
+  rececionistas  PagamentoRececionista[]
 
   @@map("pagamentos")
+}
+
+model ReservaRececionista {
+  id            String     @id @default(cuid())
+  reservaId     String
+  utilizadorId  String
+  createdAt     DateTime   @default(now())
+
+  reserva       Reserva    @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  utilizador    Utilizador @relation(fields: [utilizadorId], references: [id])
+
+  @@unique([reservaId, utilizadorId])
+  @@map("reservas_rececionistas")
+}
+
+model PagamentoRececionista {
+  id            String     @id @default(cuid())
+  pagamentoId   String
+  utilizadorId  String
+  createdAt     DateTime   @default(now())
+
+  pagamento     Pagamento  @relation(fields: [pagamentoId], references: [id], onDelete: Cascade)
+  utilizador    Utilizador @relation(fields: [utilizadorId], references: [id])
+
+  @@unique([pagamentoId, utilizadorId])
+  @@map("pagamentos_rececionistas")
+}
+
+model Notificacao {
+  id            String     @id @default(cuid())
+  reservaId     String?
+  quartoId      String?
+  utilizadorId  String
+  mensagem      String     @db.Text
+  lida          Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+
+  reserva       Reserva?   @relation(fields: [reservaId], references: [id], onDelete: Cascade)
+  quarto        Quarto?    @relation(fields: [quartoId], references: [id], onDelete: SetNull)
+  utilizador    Utilizador @relation(fields: [utilizadorId], references: [id])
+
+  @@map("notificacoes")
+  @@index([utilizadorId, lida])
 }
 
 // Logs de Auditoria
