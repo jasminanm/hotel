@@ -35,7 +35,6 @@ router.get('/ocupacao-diaria', async (req, res) => {
 
     const quartosOcupados = reservas.reduce((acc, r) => acc + r.quartos.length, 0);
 
-    // Total de quartos
     const totalQuartos = await prisma.quarto.count({
       where: {
         estado: { not: 'MANUTENCAO' },
@@ -214,7 +213,6 @@ router.get('/receita-periodo', async (req, res) => {
 
     const totalReceita = pagamentos.reduce((sum, p) => sum + p.montante, 0);
 
-    // Agrupar por tipo de quarto
     const receitaPorTipo: { [key: string]: number } = {};
     pagamentos.forEach((p) => {
       const tipo = p.reserva.tipoQuarto.nome;
@@ -279,7 +277,6 @@ router.get('/historico-hospedes', async (req, res) => {
       },
     });
 
-    // Agrupar por hóspede
     const historicoPorHospede: { [key: string]: any } = {};
 
     reservas.forEach((reserva) => {

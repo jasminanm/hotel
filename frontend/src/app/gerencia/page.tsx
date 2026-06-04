@@ -22,7 +22,6 @@ export default function GerenciaPage() {
 
   const loadStats = async () => {
     try {
-      // Buscar algumas estatísticas básicas
       const hoje = new Date().toISOString().split('T')[0];
       const [ocupacao, reservas] = await Promise.all([
         api.get(`/relatorios/ocupacao-diaria?data=${hoje}`).catch(() => null),

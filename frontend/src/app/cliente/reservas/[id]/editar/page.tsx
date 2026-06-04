@@ -67,7 +67,6 @@ export default function EditarReservaPage() {
       setReserva(reservaData);
       setTiposQuarto(tiposResponse.data);
 
-      // Validar se pode editar
       const dataInicio = new Date(reservaData.dataInicio);
       const agora = new Date();
       const diferencaHoras = (dataInicio.getTime() - agora.getTime()) / (1000 * 60 * 60);

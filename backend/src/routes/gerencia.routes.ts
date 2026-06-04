@@ -374,7 +374,6 @@ router.post('/reservas/:id/cancelar', async (req: AuthRequest, res) => {
       data: { estado: 'CANCELADA' },
     });
 
-    // Liberar quartos
     const quartosIds = await prisma.reservaQuarto.findMany({
       where: { reservaId: reserva.id },
       select: { quartoId: true },
@@ -435,7 +434,6 @@ router.post('/reservas/:id/checkin', async (req: AuthRequest, res) => {
       data: { checkInEfetuado: true },
     });
 
-    // Garantir que os quartos estão ocupados
     await prisma.quarto.updateMany({
       where: {
         id: { in: reserva.quartos.map((q) => q.quartoId) },
@@ -500,7 +498,6 @@ router.post('/reservas/:id/checkout', async (req: AuthRequest, res) => {
       },
     });
 
-    // Liberar quartos
     await prisma.quarto.updateMany({
       where: {
         id: { in: reserva.quartos.map((q) => q.quartoId) },
@@ -590,7 +587,6 @@ router.post('/pagamentos', [
 
     const { reservaId, montante, tipo, observacoes, outroOperadorId } = req.body;
 
-    // Verificar se a reserva existe
     const reserva = await prisma.reserva.findUnique({
       where: { id: reservaId },
       include: {
@@ -602,7 +598,6 @@ router.post('/pagamentos', [
       return res.status(404).json({ error: 'Reserva não encontrada' });
     }
 
-    // Calcular total já pago
     const totalPago = reserva.pagamentos.reduce((sum, p) => sum + p.montante, 0);
     const novoTotalPago = totalPago + montante;
 
@@ -693,7 +688,6 @@ router.get('/pagamentos/:id/comprovativo', async (req: AuthRequest, res) => {
       return res.status(404).json({ error: 'Pagamento não encontrado' });
     }
 
-    // Calcular total já pago
     const todosPagamentos = await prisma.pagamento.findMany({
       where: { reservaId: pagamento.reservaId },
     });

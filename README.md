@@ -1,148 +1,62 @@
 # Sistema de Gestão de Reservas Hoteleiras
 
-Aplicação web completa para gestão integral de um hotel, desenvolvida como projeto de Desenvolvimento de Software.
+Projeto de Programação Web — gestão de reservas de um hotel.
 
-## Descrição
+## Stack
 
-Sistema que permite:
-- **Clientes**: pesquisar e reservar quartos, gerir reservas mediante autenticação
-- **Gerência do Hotel**: administrar quartos, tipos de quarto, hóspedes, reservas, pagamentos, check-in/check-out e relatórios
+- Frontend: Next.js, React, Tailwind
+- Backend: Node.js, Express
+- Base de dados: MySQL, Prisma
 
-## Arquitetura
-
-- **Frontend**: Next.js 14 (React) com TypeScript
-- **Backend**: Node.js com Express e TypeScript
-- **Base de Dados**: PostgreSQL com Prisma ORM
-- **Autenticação**: JWT (JSON Web Tokens)
-
-### Estrutura do Projeto
+## Estrutura
 
 ```
 Hotel/
-├── frontend/          # Aplicação Next.js
-├── backend/           # API Express
-├── database/          # Migrations e seeds
-└── docs/             # Documentação
+├── frontend/
+├── backend/
+└── hotel_db.sql
 ```
 
-## Tecnologias Escolhidas
+## Instalação
 
-### Frontend
-- **Next.js 14**: Framework React com App Router para melhor performance e SEO
-- **TypeScript**: Tipagem estática para maior segurança
-- **Tailwind CSS**: Estilização moderna e responsiva
-- **React Hook Form**: Gestão de formulários
-- **Zustand**: Gestão de estado
+1. MySQL a correr (criar base `hotel_db` ou usar `hotel_db.sql`)
 
-### Backend
-- **Node.js + Express**: API RESTful robusta
-- **TypeScript**: Consistência e segurança de tipos
-- **Prisma ORM**: Type-safe database access
-- **JWT**: Autenticação segura
-- **bcrypt**: Hash de passwords
+2. Backend:
+```bash
+cd backend
+npm install
+cp .env.example .env
+npx prisma db push
+npm run seed
+npm run dev
+```
 
-### Base de Dados
-- **MySQL**: Base de dados relacional (compatível com MySQL Workbench)
-- **Prisma**: ORM moderno com migrations automáticas
+3. Frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## Perfis de Utilizador
+4. Abrir http://localhost:3000 (API em http://localhost:3001)
 
-### Cliente
-- Registar-se e autenticar-se
-- Pesquisar e reservar quartos
-- Gerir reservas (editar/cancelar até 24h antes)
-- Consultar histórico de reservas
+### .env do backend
 
-### Gestor
-- Todas as permissões do Rececionista
-- Gestão de tipos de quarto e preços
-- Configurações globais
-- Relatórios completos
+```
+DATABASE_URL="mysql://utilizador:password@localhost:3306/hotel_db"
+JWT_SECRET="alterar-este-valor"
+PORT=3001
+CORS_ORIGIN="http://localhost:3000"
+```
 
-### Rececionista
-- Criar/editar/cancelar reservas
-- Registar pagamentos
-- Check-in/Check-out
-- Consultar relatórios básicos
+## Credenciais de teste
 
-## Entidades Principais
+| Perfil | Email | Password |
+|--------|-------|----------|
+| Gestor | gestor@hotel.com | password123 |
+| Rececionista | rececionista@hotel.com | password123 |
+| Cliente | cliente@example.com | password123 |
 
-- **Quarto**: número, tipo, capacidade, estado
-- **Tipo de Quarto**: nome, descrição, valor base, suplementos
-- **Hóspede**: nome, documento, NIF (opcional)
-- **Reserva**: datas, quartos, hóspedes, estado, total
-- **Pagamento**: montante, data, tipo, operador
-
-## Regras de Negócio
-
-- Validação de disponibilidade de quartos
-- Cálculo automático de totais (diárias + suplementos + pequeno-almoço)
-- Cancelamento/edição permitido até 24h antes do check-in
-- Prevenção de overbooking
-- Validação de capacidade por tipo de quarto
-
-## Relatórios
-
-- Ocupação diária/mensal
-- Reservas ativas, futuras e canceladas
-- Receita por período e tipo de quarto
-- Histórico de hóspedes
-- Logs de auditoria
-
-## Documentação
-
-Consulte o ficheiro `INSTALACAO.md` para instruções detalhadas de instalação e configuração.
-
-## Credenciais de Teste
-
-Após executar o seed da base de dados, pode usar as seguintes credenciais:
-
-- **Gestor**: `gestor@hotel.com` / `password123`
-- **Rececionista**: `rececionista@hotel.com` / `password123`
-- **Cliente**: `cliente@example.com` / `password123`
-
-## Funcionalidades Implementadas
-
-### Área do Cliente
-- Registro e autenticação
-- Pesquisa de tipos de quarto
-- Verificação de disponibilidade
-- Criação de reservas
-- Listagem de reservas
-- Cancelamento de reservas (com validação de 24h)
-- Visualização de detalhes da reserva
-
-### Área da Gerência
-- Gestão de tipos de quarto (apenas Gestor)
-- Gestão de quartos
-- Gestão de hóspedes
-- Gestão de reservas
-- Check-in/Check-out
-- Registro de pagamentos
-- Gestão de utilizadores (apenas Gestor)
-- Relatórios:
-  - Ocupação diária/mensal
-  - Reservas por período
-  - Receita por período
-  - Histórico de hóspedes
-  - Logs de auditoria
-
-## Regras de Negócio Implementadas
-
-- Validação de datas (não permitir reservas no passado)
-- Verificação de disponibilidade de quartos
-- Prevenção de overbooking
-- Cálculo automático de totais (diárias + suplementos + pequeno-almoço)
-- Regra das 24 horas para cancelamento/edição
-- Validação de capacidade por tipo de quarto
-- Suporte a hóspedes extras
-- Gestão de estados de quartos (LIVRE, OCUPADO, MANUTENCAO)
-- Logs de auditoria para ações críticas
-
-## Desenvolvido por
+## Autor
 
 Nayuka Malebo
-
-## Data de Entrega
-
-26/01/2025

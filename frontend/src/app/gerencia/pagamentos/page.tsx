@@ -66,7 +66,6 @@ export default function PagamentosPage() {
         observacoes: formData.observacoes || undefined,
       });
 
-      // Recarregar pagamentos
       await loadPagamentos();
       
       setFormData({

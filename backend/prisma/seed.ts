@@ -4,9 +4,8 @@ import bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Iniciando seed da base de dados...');
+  console.log('A iniciar seed...');
 
-  // Criar utilizadores
   const hashedPassword = await bcrypt.hash('password123', 10);
 
   const gestor = await prisma.utilizador.upsert({
@@ -53,9 +52,8 @@ async function main() {
     },
   });
 
-  console.log('✅ Utilizadores criados');
+  console.log('Utilizadores criados');
 
-  // Criar tipos de quarto
   const tipoDuplo = await prisma.tipoQuarto.upsert({
     where: { nome: 'Quarto Duplo' },
     update: {},
@@ -103,14 +101,13 @@ async function main() {
       descricao: 'Quarto compacto com cama de solteiro, ideal para viajantes individuais.',
       valorBaseDiaria: 50.0,
       capacidadeBase: 1,
-      suplementoHospedeExtra: 20.0, // Se quiser adicionar uma cama extra
+      suplementoHospedeExtra: 20.0,
       custoPequenoAlmoco: 6.0,
     },
   });
 
-  console.log('✅ Tipos de quarto criados');
+  console.log('Tipos de quarto criados');
 
-  // Criar quartos
   const quartos = [];
   for (let i = 1; i <= 5; i++) {
     quartos.push(
@@ -154,7 +151,6 @@ async function main() {
     );
   }
 
-  // Criar quartos de solteiro
   for (let i = 1; i <= 4; i++) {
     quartos.push(
       await prisma.quarto.upsert({
@@ -169,10 +165,9 @@ async function main() {
     );
   }
 
-  console.log('✅ Quartos criados');
+  console.log('Quartos criados');
 
-  // Criar hóspedes de exemplo
-  const hospede1 = await prisma.hospede.upsert({
+  await prisma.hospede.upsert({
     where: {
       tipoDocumento_numeroDocumento: {
         tipoDocumento: TipoDocumento.CARTAO_CIDADAO,
@@ -188,7 +183,7 @@ async function main() {
     },
   });
 
-  const hospede2 = await prisma.hospede.upsert({
+  await prisma.hospede.upsert({
     where: {
       tipoDocumento_numeroDocumento: {
         tipoDocumento: TipoDocumento.PASSAPORTE,
@@ -203,10 +198,8 @@ async function main() {
     },
   });
 
-  console.log('✅ Hóspedes criados');
-
-  console.log('🎉 Seed concluído com sucesso!');
-  console.log('\n📋 Credenciais de acesso:');
+  console.log('Hospedes criados');
+  console.log('Seed concluido');
   console.log('Gestor: gestor@hotel.com / password123');
   console.log('Rececionista: rececionista@hotel.com / password123');
   console.log('Cliente: cliente@example.com / password123');
@@ -214,7 +207,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Erro no seed:', e);
+    console.error('Erro no seed:', e);
     process.exit(1);
   })
   .finally(async () => {

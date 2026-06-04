@@ -53,7 +53,6 @@ router.post('/verificar-disponibilidade', [
     const dataInicioDate = new Date(dataInicio);
     const dataFimDate = new Date(dataFim);
 
-    // Validações
     if (dataInicioDate >= dataFimDate) {
       return res.status(400).json({ error: 'Data de início deve ser anterior à data de fim' });
     }
@@ -130,7 +129,6 @@ router.post('/reservas', [
     const dataInicioDate = new Date(dataInicio);
     const dataFimDate = new Date(dataFim);
 
-    // Validações
     if (dataInicioDate >= dataFimDate) {
       return res.status(400).json({ error: 'Data de início deve ser anterior à data de fim' });
     }
@@ -139,7 +137,6 @@ router.post('/reservas', [
       return res.status(400).json({ error: 'Não é possível criar reservas com datas no passado' });
     }
 
-    // Buscar tipo de quarto
     const tipoQuarto = await prisma.tipoQuarto.findUnique({
       where: { id: tipoQuartoId },
     });
@@ -291,7 +288,6 @@ router.post('/reservas', [
   }
 });
 
-// Listar reservas do cliente
 router.get('/reservas', async (req: AuthRequest, res) => {
   try {
     const { estado, dataInicio, dataFim } = req.query;
@@ -398,14 +394,12 @@ router.post('/reservas/:id/cancelar', async (req: AuthRequest, res) => {
       return res.status(400).json({ error: 'Reserva já está cancelada' });
     }
 
-    // Validar regra das 24 horas
     if (!podeEditarCancelar(reserva.dataInicio)) {
       return res.status(400).json({
         error: 'Não é possível cancelar reservas com menos de 24 horas antes do check-in',
       });
     }
 
-    // Atualizar reserva
     const reservaAtualizada = await prisma.reserva.update({
       where: { id: reserva.id },
       data: { estado: 'CANCELADA' },
@@ -479,7 +473,6 @@ router.put('/reservas/:id', [
       return res.status(400).json({ error: 'Não é possível editar reservas canceladas' });
     }
 
-    // Validar regra das 24 horas
     if (!podeEditarCancelar(reserva.dataInicio)) {
       return res.status(400).json({
         error: 'Não é possível editar reservas com menos de 24 horas antes do check-in',
@@ -498,12 +491,10 @@ router.put('/reservas/:id', [
     const dataInicioDate = new Date(dataInicio);
     const dataFimDate = new Date(dataFim);
 
-    // Validações
     if (dataInicioDate >= dataFimDate) {
       return res.status(400).json({ error: 'Data de início deve ser anterior à data de fim' });
     }
 
-    // Buscar tipo de quarto
     const tipoQuarto = await prisma.tipoQuarto.findUnique({
       where: { id: tipoQuartoId },
     });
@@ -512,7 +503,6 @@ router.put('/reservas/:id', [
       return res.status(404).json({ error: 'Tipo de quarto não encontrado ou inativo' });
     }
 
-    // Verificar disponibilidade se mudou algo relevante
     if (
       tipoQuartoId !== reserva.tipoQuartoId ||
       dataInicioDate.getTime() !== reserva.dataInicio.getTime() ||
@@ -542,7 +532,6 @@ router.put('/reservas/:id', [
       incluirPequenoAlmoco
     );
 
-    // Atualizar reserva
     const reservaAtualizada = await prisma.reserva.update({
       where: { id: reserva.id },
       data: {

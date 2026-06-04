@@ -47,7 +47,6 @@ router.post('/registro', async (req, res) => {
       ...getClientInfo(req),
     });
 
-    // Gerar token
     const token = jwt.sign(
       { userId: user.id, userType: user.tipo },
       process.env.JWT_SECRET || '',
@@ -96,7 +95,6 @@ router.post('/login', async (req, res) => {
       await garantirHospedeDoCliente(user.id, user.nome, user.email);
     }
 
-    // Gerar token
     const token = jwt.sign(
       { userId: user.id, userType: user.tipo },
       process.env.JWT_SECRET || '',
@@ -128,7 +126,6 @@ router.post('/login', async (req, res) => {
   }
 });
 
-// Obter perfil do utilizador autenticado
 router.get('/perfil', authenticate, async (req: AuthRequest, res) => {
   try {
     const user = await prisma.utilizador.findUnique({

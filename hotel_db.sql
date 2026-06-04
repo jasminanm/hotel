@@ -1,6 +1,4 @@
--- Estrutura da base de dados (MySQL)
--- Gerado a partir de backend/prisma/schema.prisma
--- Dados de exemplo: cd backend && npx prisma db push && npm run seed
+-- hotel_db.sql
 
 CREATE DATABASE IF NOT EXISTS hotel_db
   CHARACTER SET utf8mb4

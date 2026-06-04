@@ -27,7 +27,6 @@ export const createLog = async (data: LogData) => {
     });
   } catch (error) {
     console.error('Erro ao criar log de auditoria:', error);
-    // Não lançar erro para não interromper o fluxo principal
   }
 };
 

@@ -1,6 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,41 +7,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// Tipos de documento suportados
 enum TipoDocumento {
   CARTAO_CIDADAO
   PASSAPORTE
   OUTRO
 }
 
-// Tipos de utilizador
 enum TipoUtilizador {
   CLIENTE
   RECECIONISTA
   GESTOR
 }
 
-// Estados do quarto
 enum EstadoQuarto {
   LIVRE
   OCUPADO
   MANUTENCAO
 }
 
-// Estados da reserva
 enum EstadoReserva {
   ATIVA
   CANCELADA
   CONCLUIDA
 }
 
-// Tipos de pagamento
 enum TipoPagamento {
   PARCIAL
   TOTAL
 }
 
-// Modelo de Utilizador (para autenticação)
 model Utilizador {
   id            String         @id @default(cuid())
   email         String         @unique
@@ -55,7 +46,6 @@ model Utilizador {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  // Relações
   reservas              Reserva[]
   pagamentos            Pagamento[]
   logsAuditoria         LogAuditoria[]
@@ -67,20 +57,18 @@ model Utilizador {
   @@map("utilizadores")
 }
 
-// Tipo de Quarto
 model TipoQuarto {
   id                    String   @id @default(cuid())
   nome                  String
   descricao             String?
   valorBaseDiaria       Float
-  capacidadeBase        Int      // Número de hóspedes base
-  suplementoHospedeExtra Float?  // Valor por hóspede extra (opcional)
-  custoPequenoAlmoco    Float    // Custo do pequeno-almoço por hóspede
+  capacidadeBase        Int
+  suplementoHospedeExtra Float?
+  custoPequenoAlmoco    Float
   ativo                 Boolean  @default(true)
   createdAt             DateTime @default(now())
   updatedAt             DateTime @updatedAt
 
-  // Relações
   quartos               Quarto[]
   reservas              Reserva[]
 
@@ -88,7 +76,6 @@ model TipoQuarto {
   @@map("tipos_quarto")
 }
 
-// Quarto individual
 model Quarto {
   id          String       @id @default(cuid())
   numero      String       @unique
@@ -97,7 +84,6 @@ model Quarto {
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
 
-  // Relações
   tipoQuarto     TipoQuarto    @relation(fields: [tipoQuartoId], references: [id])
   reservas       ReservaQuarto[]
   notificacoes   Notificacao[]
@@ -105,19 +91,17 @@ model Quarto {
   @@map("quartos")
 }
 
-// Hóspede
 model Hospede {
   id            String         @id @default(cuid())
   nome          String
   tipoDocumento TipoDocumento
   numeroDocumento String
-  nif           String?       // Opcional, apenas para faturação
+  nif           String?
   ativo         Boolean        @default(true)
   utilizadorId  String?        @unique
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
-  // Relações
   utilizador    Utilizador?    @relation(fields: [utilizadorId], references: [id])
   reservas      ReservaHospede[]
 
@@ -125,7 +109,6 @@ model Hospede {
   @@map("hospedes")
 }
 
-// Reserva
 model Reserva {
   id                  String         @id @default(cuid())
   utilizadorId        String
@@ -133,7 +116,7 @@ model Reserva {
   dataInicio          DateTime       @db.Date
   dataFim             DateTime       @db.Date
   quantidadeQuartos   Int
-  hospedesPorQuarto   Int            // Número de hóspedes por quarto
+  hospedesPorQuarto   Int
   incluirPequenoAlmoco Boolean       @default(false)
   estado              EstadoReserva  @default(ATIVA)
   totalCalculado      Float
@@ -142,7 +125,6 @@ model Reserva {
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
-  // Relações
   utilizador          Utilizador     @relation(fields: [utilizadorId], references: [id])
   tipoQuarto          TipoQuarto     @relation(fields: [tipoQuartoId], references: [id])
   quartos             ReservaQuarto[]
@@ -154,7 +136,6 @@ model Reserva {
   @@map("reservas")
 }
 
-// Tabela de junção: Reserva <-> Quarto (many-to-many)
 model ReservaQuarto {
   id        String   @id @default(cuid())
   reservaId String
@@ -168,7 +149,6 @@ model ReservaQuarto {
   @@map("reservas_quartos")
 }
 
-// Tabela de junção: Reserva <-> Hóspede (many-to-many)
 model ReservaHospede {
   id        String   @id @default(cuid())
   reservaId String
@@ -182,11 +162,10 @@ model ReservaHospede {
   @@map("reservas_hospedes")
 }
 
-// Pagamento
 model Pagamento {
   id          String         @id @default(cuid())
   reservaId   String
-  utilizadorId String        // Operador que registou o pagamento
+  utilizadorId String
   montante    Float
   data        DateTime       @default(now())
   tipo        TipoPagamento
@@ -194,7 +173,6 @@ model Pagamento {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  // Relações
   reserva        Reserva                 @relation(fields: [reservaId], references: [id])
   utilizador     Utilizador              @relation(fields: [utilizadorId], references: [id])
   rececionistas  PagamentoRececionista[]
@@ -245,19 +223,17 @@ model Notificacao {
   @@index([utilizadorId, lida])
 }
 
-// Logs de Auditoria
 model LogAuditoria {
   id          String   @id @default(cuid())
-  acao        String   // Ex: "CRIAR_RESERVA", "CANCELAR_RESERVA", "CHECK_IN", etc.
-  entidade    String   // Ex: "Reserva", "Quarto", "Pagamento"
-  entidadeId  String?  // ID da entidade afetada (pode ser de qualquer tipo)
+  acao        String
+  entidade    String
+  entidadeId  String?
   utilizadorId String?
   detalhes    String?  @db.Text
   ip          String?
   userAgent   String?
   createdAt   DateTime @default(now())
 
-  // Relações
   utilizador  Utilizador? @relation(fields: [utilizadorId], references: [id])
 
   @@map("logs_auditoria")

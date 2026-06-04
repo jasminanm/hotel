@@ -129,7 +129,6 @@ export default function ReservarPage() {
     e.preventDefault();
     setError('');
     
-    // Validações
     if (!disponibilidade || !disponibilidade.disponivel) {
       setError('Por favor, verifique a disponibilidade primeiro e certifique-se de que há quartos suficientes.');
       return;
@@ -140,7 +139,6 @@ export default function ReservarPage() {
       return;
     }
     
-    // Validar se todos os hóspedes têm dados preenchidos
     const hospedesInvalidos = formData.hospedes.some(
       (h) => !h.nome || !h.tipoDocumento || !h.numeroDocumento
     );

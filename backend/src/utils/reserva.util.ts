@@ -9,9 +9,6 @@ export interface DisponibilidadeParams {
   quantidadeQuartos: number;
 }
 
-/**
- * Calcula o total de uma reserva
- */
 export const calcularTotalReserva = (
   tipoQuarto: TipoQuarto,
   dataInicio: Date,
@@ -20,40 +17,31 @@ export const calcularTotalReserva = (
   hospedesPorQuarto: number,
   incluirPequenoAlmoco: boolean
 ): number => {
-  // Calcular número de noites
   const diffTime = dataFim.getTime() - dataInicio.getTime();
   const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   const numeroNoites = diffDays;
 
-  // Valor base por quarto por noite
   let valorPorQuartoPorNoite = tipoQuarto.valorBaseDiaria;
 
-  // Adicionar suplemento por hóspede extra (se houver)
   if (hospedesPorQuarto > tipoQuarto.capacidadeBase && tipoQuarto.suplementoHospedeExtra) {
     const hospedesExtras = hospedesPorQuarto - tipoQuarto.capacidadeBase;
     valorPorQuartoPorNoite += hospedesExtras * tipoQuarto.suplementoHospedeExtra;
   }
 
-  // Adicionar custo do pequeno-almoço se selecionado
   if (incluirPequenoAlmoco) {
     valorPorQuartoPorNoite += hospedesPorQuarto * tipoQuarto.custoPequenoAlmoco;
   }
 
-  // Total = (valor por quarto por noite) × número de noites × quantidade de quartos
   const total = valorPorQuartoPorNoite * numeroNoites * quantidadeQuartos;
 
-  return Math.round(total * 100) / 100; // Arredondar para 2 casas decimais
+  return Math.round(total * 100) / 100;
 };
 
-/**
- * Verifica disponibilidade de quartos para um período
- */
 export const verificarDisponibilidade = async (
   params: DisponibilidadeParams
 ): Promise<{ disponivel: boolean; quartosDisponiveis: number; mensagem?: string }> => {
   const { tipoQuartoId, dataInicio, dataFim, quantidadeQuartos } = params;
 
-  // Buscar todos os quartos do tipo solicitado que estão livres
   const quartosLivres = await prisma.quarto.findMany({
     where: {
       tipoQuartoId,
@@ -69,7 +57,6 @@ export const verificarDisponibilidade = async (
     };
   }
 
-  // Verificar reservas ativas que se sobrepõem ao período solicitado
   const reservasSobrepostas = await prisma.reserva.findMany({
     where: {
       tipoQuartoId,
@@ -88,7 +75,6 @@ export const verificarDisponibilidade = async (
     },
   });
 
-  // Contar quantos quartos estão ocupados no período
   const quartosOcupados = new Set<string>();
   reservasSobrepostas.forEach((reserva) => {
     reserva.quartos.forEach((rq) => {
@@ -114,16 +100,12 @@ export const verificarDisponibilidade = async (
   };
 };
 
-/**
- * Atribui quartos disponíveis a uma reserva
- */
 export const atribuirQuartos = async (
   tipoQuartoId: string,
   dataInicio: Date,
   dataFim: Date,
   quantidadeQuartos: number
 ): Promise<string[]> => {
-  // Buscar quartos livres do tipo
   const quartosLivres = await prisma.quarto.findMany({
     where: {
       tipoQuartoId,
@@ -131,7 +113,6 @@ export const atribuirQuartos = async (
     },
   });
 
-  // Verificar reservas sobrepostas
   const reservasSobrepostas = await prisma.reserva.findMany({
     where: {
       tipoQuartoId,
@@ -157,7 +138,6 @@ export const atribuirQuartos = async (
     });
   });
 
-  // Selecionar quartos disponíveis
   const quartosDisponiveis = quartosLivres
     .filter((q) => !quartosOcupados.has(q.id))
     .slice(0, quantidadeQuartos);
@@ -169,9 +149,6 @@ export const atribuirQuartos = async (
   return quartosDisponiveis.map((q) => q.id);
 };
 
-/**
- * Valida se pode editar/cancelar reserva (regra das 24 horas)
- */
 export const podeEditarCancelar = (dataInicio: Date): boolean => {
   const agora = new Date();
   const diferencaHoras = (dataInicio.getTime() - agora.getTime()) / (1000 * 60 * 60);
