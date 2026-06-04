@@ -52,6 +52,6 @@ CORS_ORIGIN="http://localhost:3000"
 | Rececionista | rececionista@hotel.com | password123 |
 | Cliente | cliente@example.com | password123 |
 
-## Autor
+## Autora
 
 Nayuka Malebo
