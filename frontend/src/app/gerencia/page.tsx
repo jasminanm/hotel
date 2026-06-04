@@ -51,6 +51,12 @@ export default function GerenciaPage() {
           <h1 className="text-2xl font-bold text-gray-900">Área da Gerência</h1>
           <div className="flex items-center gap-4">
             <span className="text-gray-700">Olá, {user?.nome}</span>
+            <Link
+              href="/perfil"
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Perfil
+            </Link>
             <button
               onClick={logout}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"

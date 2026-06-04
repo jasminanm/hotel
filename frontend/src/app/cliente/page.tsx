@@ -63,6 +63,18 @@ export default function ClientePage() {
             >
               Minhas Reservas
             </Link>
+            <Link
+              href="/cliente/notificacoes"
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Notificações
+            </Link>
+            <Link
+              href="/perfil"
+              className="text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Perfil
+            </Link>
             <button
               onClick={logout}
               className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"

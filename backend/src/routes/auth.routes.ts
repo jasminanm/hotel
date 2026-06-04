@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import { PrismaClient, TipoUtilizador } from '@prisma/client';
 import { authenticate, AuthRequest } from '../middleware/auth.middleware';
 import { createLog, getClientInfo } from '../utils/logger.util';
+import { garantirHospedeDoCliente } from '../utils/relacao.util';
 
 const router = express.Router();
 const prisma = new PrismaClient();
@@ -34,6 +35,8 @@ router.post('/registro', async (req, res) => {
         tipo: TipoUtilizador.CLIENTE,
       },
     });
+
+    await garantirHospedeDoCliente(user.id, nome, email);
 
     await createLog({
       acao: 'REGISTRO_UTILIZADOR',
@@ -89,6 +92,10 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
+    if (user.tipo === TipoUtilizador.CLIENTE) {
+      await garantirHospedeDoCliente(user.id, user.nome, user.email);
+    }
+
     // Gerar token
     const token = jwt.sign(
       { userId: user.id, userType: user.tipo },
@@ -133,6 +140,13 @@ router.get('/perfil', authenticate, async (req: AuthRequest, res) => {
         tipo: true,
         ativo: true,
         createdAt: true,
+        hospedePerfil: {
+          select: {
+            id: true,
+            nome: true,
+            nif: true,
+          },
+        },
       },
     });
 
@@ -144,6 +158,56 @@ router.get('/perfil', authenticate, async (req: AuthRequest, res) => {
   } catch (error: any) {
     console.error('Erro ao buscar perfil:', error);
     res.status(500).json({ error: 'Erro ao buscar perfil' });
+  }
+});
+
+router.delete('/perfil', authenticate, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.userId!;
+
+    const reservas = await prisma.reserva.count({
+      where: { utilizadorId: userId },
+    });
+
+    if (reservas > 0) {
+      return res.status(400).json({
+        error: 'Não é possível apagar a conta enquanto existirem reservas associadas.',
+      });
+    }
+
+    const pagamentos = await prisma.pagamento.count({
+      where: { utilizadorId: userId },
+    });
+
+    if (pagamentos > 0) {
+      return res.status(400).json({
+        error: 'Não é possível apagar a conta com pagamentos registados.',
+      });
+    }
+
+    await createLog({
+      acao: 'APAGAR_UTILIZADOR',
+      entidade: 'Utilizador',
+      entidadeId: userId,
+      utilizadorId: userId,
+      detalhes: 'Conta apagada pelo utilizador',
+      ...getClientInfo(req),
+    });
+
+    await prisma.notificacao.deleteMany({ where: { utilizadorId: userId } });
+    await prisma.reservaRececionista.deleteMany({ where: { utilizadorId: userId } });
+    await prisma.pagamentoRececionista.deleteMany({ where: { utilizadorId: userId } });
+    await prisma.hospede.deleteMany({ where: { utilizadorId: userId } });
+    await prisma.logAuditoria.updateMany({
+      where: { utilizadorId: userId },
+      data: { utilizadorId: null },
+    });
+    await prisma.utilizador.delete({ where: { id: userId } });
+
+    res.json({ message: 'Conta apagada com sucesso' });
+  } catch (error: any) {
+    console.error('Erro ao apagar perfil:', error);
+    res.status(500).json({ error: 'Erro ao apagar perfil' });
   }
 });
 
